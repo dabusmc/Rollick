@@ -86,6 +86,8 @@ namespace Kernel
 		F8 = 0x42,
 		F9 = 0x43,
 		F10 = 0x44,
+		F11 = 0x57,
+		F12 = 0x58,
 
 		NumLock = 0x45,
 		ScrollLock = 0x46,
@@ -105,9 +107,6 @@ namespace Kernel
 		KeypadDecimal = 0x53,
 
 		NonUSBackslash = 0x56,
-
-		F11 = 0x57,
-		F12 = 0x58,
 
 		// Extended keys
 		RightCtrl = 0x100,

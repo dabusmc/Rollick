@@ -1,11 +1,12 @@
-#include "Kernel.h"
 #include "Arch/i386/Interrupts/IDT.h"
 #include "Arch/i386/Interrupts/PIC.h"
 #include "Arch/i386/Interrupts/PIT.h"
-#include "Arch/i386/Input/PS2Keyboard.h"
+
 #include "Input/Input.h"
 
 #include "Library/kStandardLib.h"
+
+#include "Kernel.h"
 
 #define PIT_FREQUENCY 100
 

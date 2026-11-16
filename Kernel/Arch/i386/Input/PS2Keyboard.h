@@ -8,6 +8,10 @@ namespace Kernel
 	{
 	public:
 		void Initialize() override;
+
+	private:
+		bool WaitForInputBuffer();
+		bool WaitForOutputBuffer();
 	};
 
 	void HandleKeyboardInterrupt();

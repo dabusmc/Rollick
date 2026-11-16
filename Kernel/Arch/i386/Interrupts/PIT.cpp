@@ -6,15 +6,12 @@ namespace Kernel
 {
 	namespace Interrupts
 	{
-		namespace
-		{
-			constexpr uint16_t PIT_COMMAND = 0x43;
-			constexpr uint16_t PIT_CHANNEL0 = 0x40;
+		constexpr uint16_t PIT_COMMAND = 0x43;
+		constexpr uint16_t PIT_CHANNEL0 = 0x40;
 
-			constexpr uint32_t PIT_INPUT_FREQUENCY = 1193182;
+		constexpr uint32_t PIT_INPUT_FREQUENCY = 1193182;
 
-			volatile uint32_t s_Ticks = 0;
-		}
+		volatile uint32_t s_Ticks = 0;
 
 		void InitializePIT(uint32_t frequency)
 		{

@@ -9,7 +9,9 @@ namespace Kernel
 		size_t next = (m_Head + 1) % CAPACITY;
 
 		if (next == m_Tail)
+		{
 			return false;
+		}
 
 		m_Events[m_Head] = event;
 
@@ -37,7 +39,9 @@ namespace Kernel
 		if (m_Head == m_Tail)
 		{
 			if (flags & (1u << 9))
+			{
 				asm volatile("sti" ::: "memory");
+			}
 
 			return false;
 		}
@@ -50,7 +54,9 @@ namespace Kernel
 
 		// Restore interrupts only if they were enabled before Pop().
 		if (flags & (1u << 9))
+		{
 			asm volatile("sti" ::: "memory");
+		}
 
 		return true;
 	}

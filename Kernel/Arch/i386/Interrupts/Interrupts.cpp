@@ -1,14 +1,11 @@
+#include "Arch/i386/Input/PS2Keyboard.h"
 #include "Arch/i386/Interrupts/InterruptFrame.h"
-
 #include "Arch/i386/Interrupts/PIC.h"
 #include "Arch/i386/Interrupts/PIT.h"
 
 #include "Panic.h"
 
 #include <stdint.h>
-
-#include "Arch/i386/Input/PS2Keyboard.h"
-#include "Library/kStandardLib.h"
 
 extern "C" void interruptHandler(Kernel::Interrupts::InterruptFrame* frame)
 {

@@ -8,43 +8,14 @@
 
 namespace Kernel
 {
-	// FIXME: All this anonymous namespace nonsense is a little much. Maybe just move this into member functions/variables in PS2Keyboard
-	namespace
-	{
-		constexpr uint16_t KEYBOARD_DATA_PORT = 0x60;
-		constexpr uint16_t KEYBOARD_STATUS_PORT = 0x64;
-		constexpr uint16_t KEYBOARD_COMMAND_PORT = 0x64;
+	constexpr uint16_t KEYBOARD_DATA_PORT = 0x60;
+	constexpr uint16_t KEYBOARD_STATUS_PORT = 0x64;
+	constexpr uint16_t KEYBOARD_COMMAND_PORT = 0x64;
 
-		constexpr uint8_t STATUS_OUTPUT_FULL = 0x01;
-		constexpr uint8_t STATUS_INPUT_FULL = 0x02;
+	constexpr uint8_t STATUS_OUTPUT_FULL = 0x01;
+	constexpr uint8_t STATUS_INPUT_FULL = 0x02;
 
-		constexpr uint32_t WAIT_TIMEOUT = 100000;
-
-		bool s_ExtendedScancode = false;
-		PS2Scancode s_ScancodeDecoder;
-
-		bool WaitForInputBuffer()
-		{
-			for (uint32_t i = 0; i < WAIT_TIMEOUT; i++)
-			{
-				if (!(inb(KEYBOARD_STATUS_PORT) & STATUS_INPUT_FULL))
-					return true;
-			}
-
-			return false;
-		}
-
-		bool WaitForOutputBuffer()
-		{
-			for (uint32_t i = 0; i < WAIT_TIMEOUT; i++)
-			{
-				if (inb(KEYBOARD_STATUS_PORT) & STATUS_OUTPUT_FULL)
-					return true;
-			}
-
-			return false;
-		}
-	}
+	constexpr uint32_t WAIT_TIMEOUT = 100000;
 
 	void PS2Keyboard::Initialize()
 	{
@@ -149,6 +120,30 @@ namespace Kernel
 
 		m_IsReady = true;
 	}
+
+	bool PS2Keyboard::WaitForInputBuffer()
+	{
+		for (uint32_t i = 0; i < WAIT_TIMEOUT; i++)
+		{
+			if (!(inb(KEYBOARD_STATUS_PORT) & STATUS_INPUT_FULL))
+				return true;
+		}
+
+		return false;
+	}
+
+	bool PS2Keyboard::WaitForOutputBuffer()
+	{
+		for (uint32_t i = 0; i < WAIT_TIMEOUT; i++)
+		{
+			if (inb(KEYBOARD_STATUS_PORT) & STATUS_OUTPUT_FULL)
+				return true;
+		}
+
+		return false;
+	}
+
+	static PS2Scancode s_ScancodeDecoder;
 
 	void HandleKeyboardInterrupt()
 	{

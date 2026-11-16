@@ -102,11 +102,11 @@ namespace Kernel
 		bool shifted = m_LeftShiftPressed || m_RightShiftPressed;
 
 		if (m_CapsLockEnabled && IsLetter(keycode))
+		{
 			shifted = !shifted;
+		}
 
-		return shifted
-			? s_ScancodeTableShifted[sc]
-			: s_ScancodeTable[sc];
+		return shifted ? s_ScancodeTableShifted[sc] : s_ScancodeTable[sc];
 	}
 
 	void Keyboard::ProcessKeyEvent(const KeyEvent& event)
@@ -118,14 +118,14 @@ namespace Kernel
 		case KeyCode::LeftShift:
 			m_LeftShiftPressed = pressed;
 			return;
-
 		case KeyCode::RightShift:
 			m_RightShiftPressed = pressed;
 			return;
 		case KeyCode::CapsLock:
 			if (pressed && !m_CapsLockPressed)
+			{
 				m_CapsLockEnabled = !m_CapsLockEnabled;
-
+			}
 			m_CapsLockPressed = pressed;
 			return;
 		default:
@@ -133,11 +133,14 @@ namespace Kernel
 		}
 
 		if (!pressed)
+		{
 			return;
+		}
 
 		char key = TranslateKey(event.Key);
-
 		if (key != '\0')
+		{
 			kprintf("%c", key);
+		}
 	}
 }
