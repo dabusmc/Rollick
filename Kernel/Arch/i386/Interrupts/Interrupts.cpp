@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "Arch/i386/Keyboard/Keyboard.h"
+#include "Arch/i386/Input/PS2Keyboard.h"
 #include "Library/kStandardLib.h"
 
 extern "C" void interruptHandler(Kernel::Interrupts::InterruptFrame* frame)

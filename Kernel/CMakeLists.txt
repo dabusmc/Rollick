@@ -1,26 +1,31 @@
 set(KERNEL_SOURCES
-        Library/kStandardLib.cpp
+            Input/Keyboard.cpp
 
-        Prekernel/Arch/i386/Boot/boot.s
-        Prekernel/init.cpp
+            Library/kStandardLib.cpp
 
-        Security/StackSmashingProtector.cpp
+            Prekernel/init.cpp
 
-        Panic.cpp
-        init.cpp)
+            Security/StackSmashingProtector.cpp
+
+            Panic.cpp
+            Kernel.cpp
+            init.cpp)
 
 set(i386_SOURCES
-    Arch/i386/Interrupts/IDT.cpp
-    Arch/i386/Interrupts/Interrupts.cpp
-    Arch/i386/Interrupts/ISR.s
-    Arch/i386/Interrupts/PIC.cpp
-    Arch/i386/Interrupts/PIT.cpp
+        Arch/i386/Interrupts/IDT.cpp
+        Arch/i386/Interrupts/Interrupts.cpp
+        Arch/i386/Interrupts/ISR.s
+        Arch/i386/Interrupts/PIC.cpp
+        Arch/i386/Interrupts/PIT.cpp
 
-    Arch/i386/Keyboard/Keyboard.cpp
+        Arch/i386/Input/PS2Keyboard.cpp
+        Arch/i386/Input/Input.cpp
 
-    Arch/i386/Serial/Serial.cpp
+        Arch/i386/Serial/Serial.cpp
 
-    Arch/i386/Terminal.cpp)
+        Arch/i386/Terminal.cpp
+
+        Prekernel/Arch/i386/Boot/boot.s)
 
 add_executable(rollick_kernel ${i386_SOURCES} ${KERNEL_SOURCES})
 
