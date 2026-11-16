@@ -1,0 +1,50 @@
+# Kernel executable
+add_executable(rollick_kernel kernel.c
+    Prekernel/Arch/i386/Boot/boot.s
+)
+
+set_target_properties(rollick_kernel PROPERTIES
+    OUTPUT_NAME "rollick"
+    SUFFIX ".elf"
+)
+
+# Compiler options
+target_compile_options(rollick_kernel PRIVATE
+    $<$<COMPILE_LANGUAGE:C>:-ffreestanding>
+    $<$<COMPILE_LANGUAGE:C>:-O2>
+    $<$<COMPILE_LANGUAGE:C>:-Wall>
+    $<$<COMPILE_LANGUAGE:C>:-Wextra>
+    $<$<COMPILE_LANGUAGE:C>:-fno-stack-protector>
+    $<$<COMPILE_LANGUAGE:C>:-fno-pic>
+
+    $<$<COMPILE_LANGUAGE:CXX>:-ffreestanding>
+    $<$<COMPILE_LANGUAGE:CXX>:-O2>
+    $<$<COMPILE_LANGUAGE:CXX>:-Wall>
+    $<$<COMPILE_LANGUAGE:CXX>:-Wextra>
+    $<$<COMPILE_LANGUAGE:CXX>:-fno-stack-protector>
+    $<$<COMPILE_LANGUAGE:CXX>:-fno-pic>
+    $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>
+    $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+)
+
+# Linker options
+target_link_options(rollick_kernel PRIVATE
+    -nostdlib
+    -Wl,--build-id=none
+    "-Wl,-T,${CMAKE_SOURCE_DIR}/linker.ld"
+)
+
+# Linker script dependency
+set_property(TARGET rollick_kernel APPEND PROPERTY
+    LINK_DEPENDS "${CMAKE_SOURCE_DIR}/linker.ld"
+)
+
+# GCC runtime support
+target_link_libraries(rollick_kernel PRIVATE gcc)
+
+# QEMU
+add_custom_target(run
+    COMMAND qemu-system-i386 -kernel "$<TARGET_FILE:rollick_kernel>"
+    DEPENDS rollick_kernel
+    USES_TERMINAL
+)
