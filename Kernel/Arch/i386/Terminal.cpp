@@ -48,14 +48,33 @@ namespace Kernel
 
 	void Terminal::PutChar(char c)
 	{
-		if(c == '\n')
+		switch (c)
 		{
-			if (++m_Row == VGA_HEIGHT)
+		case '\n':
 			{
-				Scroll();
+				if (++m_Row == VGA_HEIGHT)
+				{
+					Scroll();
+				}
+				m_Column = 0;
+				return;
 			}
-			m_Column = 0;
-			return;
+		case '\b':
+			{
+				// FIXME: Terminal can only backspace on the current line
+				if (m_Column == 0)
+				{
+					return;
+				}
+
+				m_Column--;
+
+				const size_t index = m_Row * VGA_WIDTH + m_Column;
+				m_Buffer[index] = vgaEntry(' ', m_Color);
+				return;
+			}
+		default:
+			break;
 		}
 
 		const size_t index = m_Row * VGA_WIDTH + m_Column;

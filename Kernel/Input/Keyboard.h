@@ -19,5 +19,6 @@ namespace Kernel
 
 	protected:
 		bool m_IsReady = false;
+		bool m_IsShifted = false;
 	};
 }
