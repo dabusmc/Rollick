@@ -14,12 +14,54 @@ void terminalWrite(const char* str, size_t len)
 extern "C"
 {
 
+void clrscr()
+{
+	g_Terminal.Clear();
+}
+
 size_t strlen(const char* str)
 {
 	size_t len = 0;
 	while (str[len])
 		len++;
 	return len;
+}
+
+size_t itoa(int32_t value, char* buffer)
+{
+	size_t index = 0;
+	bool negative = value < 0;
+
+	// Handle zero separately
+	if (value == 0)
+	{
+		buffer[index++] = '0';
+	}
+	else
+	{
+		uint32_t magnitude = negative ? 0u - static_cast<uint32_t>(value) : static_cast<uint32_t>(value);
+		while (magnitude > 0)
+		{
+			buffer[index++] = '0' + (magnitude % 10);
+			magnitude /= 10;
+		}
+
+		if (negative)
+		{
+			buffer[index++] = '-';
+		}
+
+		for (size_t i = 0; i < index / 2; i++)
+		{
+			char temp = buffer[i];
+			buffer[i] = buffer[index - i - 1];
+			buffer[index - i - 1] = temp;
+		}
+	}
+
+	buffer[index] = '\0';
+
+	return index;
 }
 
 int32_t putchar(int ic)
@@ -74,6 +116,17 @@ int32_t kprintf(const char* format, ...)
 
 				size_t len = strlen(str);
 				terminalWrite(str, len);
+				written += len;
+				break;
+			}
+		case 'd':
+		case 'i':
+			{
+				int32_t value = va_arg(parameters, int);
+
+				char buffer[12]; // NOTE: 12 is enough to store '-2147483648' including the null terminator
+				size_t len = itoa(value, buffer);
+				terminalWrite(buffer, len);
 				written += len;
 				break;
 			}

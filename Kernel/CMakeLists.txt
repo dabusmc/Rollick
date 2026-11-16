@@ -3,6 +3,7 @@ set(KERNEL_SOURCES
         Library/kStandardLib.cpp
         Prekernel/Arch/i386/Boot/boot.s
         Prekernel/init.cpp
+        Panic.cpp
         init.cpp)
 
 add_executable(rollick_kernel ${KERNEL_SOURCES})
@@ -12,6 +13,11 @@ target_include_directories(rollick_kernel PRIVATE .)
 set_target_properties(rollick_kernel PROPERTIES
     OUTPUT_NAME "rollick"
     SUFFIX ".elf"
+)
+
+target_compile_definitions(rollick_kernel PRIVATE
+        ROLLICK_OS
+        ROLLICK_KERNEL
 )
 
 # Compiler options

@@ -15,7 +15,11 @@ namespace Kernel
 	{
 		m_Color = vgaEntryColor(VGAColor_LightGray, VGAColor_Black);
 		m_Buffer = reinterpret_cast<uint16_t*>(VGA_MEMORY);
+		Clear();
+	}
 
+	void Terminal::Clear()
+	{
 		for (size_t y = 0; y < VGA_HEIGHT; y++)
 		{
 			for (size_t x = 0; x < VGA_WIDTH; x++)
@@ -24,6 +28,9 @@ namespace Kernel
 				m_Buffer[index] = vgaEntry(' ', m_Color);
 			}
 		}
+
+		m_Row = 0;
+		m_Column = 0;
 	}
 
 	void Terminal::Write(const char* data)

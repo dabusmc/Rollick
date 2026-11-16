@@ -1,3 +1,4 @@
+#include "Panic.h"
 #include "Library/kStandardLib.h"
 
 extern "C" void kernelMain(void)
@@ -7,4 +8,6 @@ extern "C" void kernelMain(void)
 	kprintf("String: %s\n", "Hello World");
 	kprintf("Mixed: %s %c %s\n", "Rollick", '!', "OS");
 	kprintf("Progress: 100%%\n");
+
+	KERNEL_PANIC("Testing kernel panic");
 }

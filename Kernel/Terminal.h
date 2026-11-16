@@ -10,6 +10,8 @@ namespace Kernel
 	public:
 		Terminal();
 
+		void Clear();
+
 		void Write(const char* data);
 		void Write(const char* data, size_t size);
 
