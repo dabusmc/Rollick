@@ -16,6 +16,7 @@ namespace Kernel
 		m_Color = vgaEntryColor(VGAColor_LightGray, VGAColor_Black);
 		m_Buffer = reinterpret_cast<uint16_t*>(VGA_MEMORY);
 		Clear();
+		EnableCursor();
 	}
 
 	void Terminal::Clear()
@@ -46,6 +47,18 @@ namespace Kernel
 		}
 	}
 
+	void Terminal::SetCursorEnabled(bool enabled)
+	{
+		if (enabled)
+		{
+			EnableCursor();
+		}
+		else
+		{
+			DisableCursor();
+		}
+	}
+
 	void Terminal::PutChar(char c)
 	{
 		switch (c)
@@ -57,6 +70,7 @@ namespace Kernel
 					Scroll();
 				}
 				m_Column = 0;
+				UpdateCursorPosition();
 				return;
 			}
 		case '\b':
@@ -71,6 +85,7 @@ namespace Kernel
 
 				const size_t index = m_Row * VGA_WIDTH + m_Column;
 				m_Buffer[index] = vgaEntry(' ', m_Color);
+				UpdateCursorPosition();
 				return;
 			}
 		default:
@@ -88,6 +103,7 @@ namespace Kernel
 				Scroll();
 			}
 		}
+		UpdateCursorPosition();
 	}
 
 	void Terminal::Scroll()
@@ -113,5 +129,31 @@ namespace Kernel
 
 		// Update variables
 		m_Row -= 1;
+		UpdateCursorPosition();
+	}
+
+	void Terminal::EnableCursor()
+	{
+		outb(0x0A, 0x3D4);
+		outb((inb(0x3D5) & 0xC0) | 1, 0x3D5);
+
+		outb(0x0B, 0x3D4);
+		outb((inb(0x3D5) & 0xE0) | 1, 0x3D5);
+	}
+
+	void Terminal::DisableCursor()
+	{
+		outb(0x0A, 0x3D4);
+		outb(0x20, 0x3D5);
+	}
+
+	void Terminal::UpdateCursorPosition()
+	{
+		uint16_t pos = (m_Row + 1) * VGA_WIDTH + m_Column;
+
+		outb(0x0F, 0x3D4);
+		outb(pos & 0xFF, 0x3D5);
+		outb(0x0E, 0x3D4);
+		outb((pos >> 8) & 0xFF, 0x3D5);
 	}
 }
