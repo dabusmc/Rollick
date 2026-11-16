@@ -4,6 +4,7 @@ set(KERNEL_SOURCES
         Arch/i386/Interrupts/ISR.s
         Arch/i386/Interrupts/PIC.cpp
         Arch/i386/Interrupts/PIT.cpp
+        Arch/i386/Serial/Serial.cpp
         Arch/i386/Terminal.cpp
 
         Library/kStandardLib.cpp
@@ -70,6 +71,8 @@ target_link_libraries(rollick_kernel PRIVATE gcc)
 add_custom_target(run
         COMMAND qemu-system-i386
         -kernel "$<TARGET_FILE:rollick_kernel>"
+        -serial stdio
+        -monitor none
         -d int,cpu_reset
         -D qemu.log
         DEPENDS rollick_kernel

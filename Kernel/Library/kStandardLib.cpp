@@ -1,14 +1,18 @@
 #include "kStandardLib.h"
 
+#include "Arch/i386/Serial/Serial.h"
+
 #include "Terminal.h"
 
 #include <stdarg.h>
 
 Kernel::Terminal g_Terminal;
+Kernel::Serial g_Serial;
 
 void terminalWrite(const char* str, size_t len)
 {
 	g_Terminal.Write(str, len);
+	g_Serial.Write(str, len);
 }
 
 extern "C"

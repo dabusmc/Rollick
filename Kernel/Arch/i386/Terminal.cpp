@@ -1,6 +1,6 @@
 #include "Terminal.h"
 
-#include "VGA.h"
+#include "Arch/i386/VGA.h"
 
 #include "Library/kStandardLib.h"
 

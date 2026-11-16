@@ -91,6 +91,8 @@ add_custom_target(run_iso
         COMMAND qemu-system-i386
         -cdrom "${ISO_OUTPUT}"
         -boot d
+        -serial stdio
+        -monitor none
         -d int,cpu_reset
         -D "${CMAKE_BINARY_DIR}/qemu-iso.log"
         DEPENDS rollick_iso

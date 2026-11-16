@@ -1,4 +1,4 @@
-#include "PIT.h"
+#include "Arch/i386/Interrupts/PIT.h"
 
 #include "Library/kStandardLib.h"
 

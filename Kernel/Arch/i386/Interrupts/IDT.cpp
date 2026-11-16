@@ -1,4 +1,4 @@
-#include "IDT.h"
+#include "Arch/i386/Interrupts/IDT.h"
 
 extern "C"
 {

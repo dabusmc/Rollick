@@ -1,8 +1,8 @@
-#include "Library/kStandardLib.h"
-
 #include "Arch/i386/Interrupts/IDT.h"
 #include "Arch/i386/Interrupts/PIC.h"
 #include "Arch/i386/Interrupts/PIT.h"
+
+#include "Library/kStandardLib.h"
 
 #define PIT_FREQUENCY 100
 

@@ -1,7 +1,9 @@
-#include "InterruptFrame.h"
+#include "Arch/i386/Interrupts/InterruptFrame.h"
+
+#include "Arch/i386/Interrupts/PIC.h"
+#include "Arch/i386/Interrupts/PIT.h"
+
 #include "Panic.h"
-#include "PIC.h"
-#include "PIT.h"
 
 #include <stdint.h>
 

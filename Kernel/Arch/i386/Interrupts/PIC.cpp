@@ -1,4 +1,4 @@
-#include "PIC.h"
+#include "Arch/i386/Interrupts/PIC.h"
 
 #include "Library/kStandardLib.h"
 
