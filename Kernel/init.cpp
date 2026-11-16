@@ -45,6 +45,24 @@ extern "C" void kernelMain(void)
 
 	while (true)
 	{
-		asm volatile("hlt");
+		Kernel::KeyEvent event = { };
+
+		while (Kernel::g_GlobalObjects.Input_KeyboardEvents.Pop(event))
+		{
+			Kernel::g_GlobalObjects.Input_Keyboard->ProcessKeyEvent(event);
+		}
+
+		// Avoid missing an interrupt between checking the queue and halting.
+		asm volatile("cli" ::: "memory");
+
+		if (Kernel::g_GlobalObjects.Input_KeyboardEvents.Empty())
+		{
+			// STI delays interrupt recognition until after the following HLT.
+			asm volatile("sti\n\thlt" ::: "memory");
+		}
+		else
+		{
+			asm volatile("sti" ::: "memory");
+		}
 	}
 }

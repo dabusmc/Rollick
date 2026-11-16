@@ -1,5 +1,6 @@
 set(KERNEL_SOURCES
             Input/Keyboard.cpp
+            Input/KeyEventQueue.cpp
 
             Library/kStandardLib.cpp
 

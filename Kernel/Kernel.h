@@ -1,13 +1,14 @@
 #pragma once
-#include "Terminal.h"
-#include "Arch/i386/Serial/Serial.h"
+
 #include "Input/Keyboard.h"
+#include "Input/KeyEventQueue.h"
 
 namespace Kernel
 {
 	struct GlobalObjects
 	{
-		Keyboard* Input_Keyboard;
+		Keyboard* Input_Keyboard = nullptr;
+		KeyEventQueue Input_KeyboardEvents;
 	};
 
 	extern GlobalObjects g_GlobalObjects;

@@ -2,6 +2,8 @@
 
 #include "Library/kStandardLib.h"
 
+#include "Kernel.h"
+
 namespace Kernel
 {
 
@@ -100,30 +102,40 @@ namespace Kernel
 
 	void Keyboard::InterpretScancode(uint16_t scancode)
 	{
-		uint16_t sc = scancode & 0x7F;
-		KeyCode keycode = static_cast<KeyCode>(sc);
+		// Extended scancodes aren't handled yet.
+		if (scancode > 0xFF)
+			return;
 
-		bool released = scancode & 0x80;
-		if (released)
+		bool released = (scancode & 0x80) != 0;
+		scancode &= 0x7F;
+
+		KeyEvent event =
 		{
-			if (keycode == KeyCode::LeftShift && m_IsShifted)
-			{
-				m_IsShifted = false;
-			}
+			static_cast<KeyCode>(scancode),
+			released ? KeyState::Released : KeyState::Pressed
+		};
+
+		g_GlobalObjects.Input_KeyboardEvents.Push(event);
+	}
+
+	void Keyboard::ProcessKeyEvent(const KeyEvent& event)
+	{
+		if (event.Key == KeyCode::LeftShift)
+		{
+			m_IsShifted = event.State == KeyState::Pressed;
 			return;
 		}
 
-		if (keycode == KeyCode::LeftShift && !m_IsShifted)
-		{
-			m_IsShifted = true;
-		}
-
-		char key = TranslateKey(keycode);
-		if (key == '\0')
+		if (event.State == KeyState::Released)
 		{
 			return;
 		}
 
-		kprintf("%c", key);
+		char key = TranslateKey(event.Key);
+
+		if (key != '\0')
+		{
+			kprintf("%c", key);
+		}
 	}
 }
