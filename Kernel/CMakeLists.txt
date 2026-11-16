@@ -3,6 +3,7 @@ set(KERNEL_SOURCES
         Library/kStandardLib.cpp
         Prekernel/Arch/i386/Boot/boot.s
         Prekernel/init.cpp
+        Security/StackSmashingProtector.cpp
         Panic.cpp
         init.cpp)
 
@@ -26,14 +27,16 @@ target_compile_options(rollick_kernel PRIVATE
     $<$<COMPILE_LANGUAGE:C>:-O2>
     $<$<COMPILE_LANGUAGE:C>:-Wall>
     $<$<COMPILE_LANGUAGE:C>:-Wextra>
-    $<$<COMPILE_LANGUAGE:C>:-fno-stack-protector>
+    $<$<COMPILE_LANGUAGE:C>:-fstack-protector-strong>
+    $<$<COMPILE_LANGUAGE:C>:-mstack-protector-guard=global>
     $<$<COMPILE_LANGUAGE:C>:-fno-pic>
 
     $<$<COMPILE_LANGUAGE:CXX>:-ffreestanding>
     $<$<COMPILE_LANGUAGE:CXX>:-O2>
     $<$<COMPILE_LANGUAGE:CXX>:-Wall>
     $<$<COMPILE_LANGUAGE:CXX>:-Wextra>
-    $<$<COMPILE_LANGUAGE:CXX>:-fno-stack-protector>
+    $<$<COMPILE_LANGUAGE:CXX>:-fstack-protector-strong>
+    $<$<COMPILE_LANGUAGE:CXX>:-mstack-protector-guard=global>
     $<$<COMPILE_LANGUAGE:CXX>:-fno-pic>
     $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>
     $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
