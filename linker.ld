@@ -34,6 +34,17 @@ SECTIONS
 		*(.rodata)
 	}
 
+	/* Global constructors */
+    .init_array ALIGN(4) :
+    {
+        PROVIDE_HIDDEN (__init_array_start = .);
+
+        KEEP (*(SORT_BY_INIT_PRIORITY(.init_array.*)))
+        KEEP (*(.init_array))
+
+        PROVIDE_HIDDEN (__init_array_end = .);
+    }
+
 	/* Read-write data (initialized) */
 	.data BLOCK(4K) : ALIGN(4K)
 	{

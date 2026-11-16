@@ -1,7 +1,13 @@
-# Kernel executable
-add_executable(rollick_kernel kernel.c
-    Prekernel/Arch/i386/Boot/boot.s
-)
+set(KERNEL_SOURCES
+        Arch/i386/Terminal.cpp
+        Library/kStandardLib.cpp
+        Prekernel/Arch/i386/Boot/boot.s
+        Prekernel/init.cpp
+        init.cpp)
+
+add_executable(rollick_kernel ${KERNEL_SOURCES})
+
+target_include_directories(rollick_kernel PRIVATE .)
 
 set_target_properties(rollick_kernel PROPERTIES
     OUTPUT_NAME "rollick"
