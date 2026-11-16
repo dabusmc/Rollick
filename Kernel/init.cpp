@@ -6,7 +6,19 @@ extern "C" void kernelMain(void)
 {
 	Kernel::Interrupts::InitializeIDT();
 
-	asm volatile("int $0");
+	volatile int numerator = 10;
+	volatile int denominator = 0;
+
+	int result;
+
+	asm volatile(
+		"movl %1, %%eax\n"
+		"cltd\n"
+		"idivl %2\n"
+		: "=a"(result)
+		: "r"(numerator), "r"(denominator)
+		: "edx"
+	);
 
 	kprintf("Hello, Rollick!\n");
 	kprintf("Character: %c\n", 'A');

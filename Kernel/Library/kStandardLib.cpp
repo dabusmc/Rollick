@@ -130,6 +130,17 @@ int32_t kprintf(const char* format, ...)
 				written += len;
 				break;
 			}
+		case 'x':
+			{
+				int32_t value = va_arg(parameters, int);
+				const char* digits = "0123456789ABCDEF";
+				for (int i = 28; i >= 0; i -= 4)
+				{
+					putchar(digits[(value >> i) & 0xF]);
+					written++;
+				}
+				break;
+			}
 		default:
 			{
 				putchar('%');
