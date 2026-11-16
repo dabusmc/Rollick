@@ -107,6 +107,28 @@ namespace Kernel
 		NonUSBackslash = 0x56,
 
 		F11 = 0x57,
-		F12 = 0x58
+		F12 = 0x58,
+
+		// Extended keys
+		RightCtrl = 0x100,
+		RightAlt,
+		KeypadEnter,
+		KeypadDivide,
+
+		ArrowUp,
+		ArrowDown,
+		ArrowLeft,
+		ArrowRight,
+
+		Home,
+		End,
+		PageUp,
+		PageDown,
+		Insert,
+		Delete,
+
+		LeftSuper,
+		RightSuper,
+		Menu
 	};
 }

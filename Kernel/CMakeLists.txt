@@ -20,6 +20,7 @@ set(i386_SOURCES
         Arch/i386/Interrupts/PIT.cpp
 
         Arch/i386/Input/PS2Keyboard.cpp
+        Arch/i386/Input/PS2Scancode.cpp
         Arch/i386/Input/Input.cpp
 
         Arch/i386/Serial/Serial.cpp

@@ -1,11 +1,14 @@
 #include "Arch/i386/Input/PS2Keyboard.h"
 
+#include "Arch/i386/Input/PS2Scancode.h"
+
 #include "Library/kStandardLib.h"
 
 #include "Kernel.h"
 
 namespace Kernel
 {
+	// FIXME: All this anonymous namespace nonsense is a little much. Maybe just move this into member functions/variables in PS2Keyboard
 	namespace
 	{
 		constexpr uint16_t KEYBOARD_DATA_PORT = 0x60;
@@ -16,6 +19,9 @@ namespace Kernel
 		constexpr uint8_t STATUS_INPUT_FULL = 0x02;
 
 		constexpr uint32_t WAIT_TIMEOUT = 100000;
+
+		bool s_ExtendedScancode = false;
+		PS2Scancode s_ScancodeDecoder;
 
 		bool WaitForInputBuffer()
 		{
@@ -154,19 +160,10 @@ namespace Kernel
 
 		uint8_t scancode = inb_p(KEYBOARD_DATA_PORT);
 
-		if (scancode == 0xFA || scancode == 0xFE)
+		KeyEvent event;
+		if (s_ScancodeDecoder.Decode(scancode, event))
 		{
-			return;
+			g_GlobalObjects.Input_KeyboardEvents.Push(event);
 		}
-
-		uint8_t extended = 0x00;
-		if (scancode == 0xE0)
-		{
-			extended = 0xE0;
-			scancode = inb_p(KEYBOARD_DATA_PORT);
-		}
-
-		uint16_t keyCode = (extended << 8) | scancode;
-		g_GlobalObjects.Input_Keyboard->InterpretScancode(keyCode);
 	}
 }
