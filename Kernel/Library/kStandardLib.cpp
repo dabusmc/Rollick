@@ -161,4 +161,27 @@ int32_t kprintf(const char* format, ...)
 	return written;
 }
 
+void _io_delay()
+{
+	asm volatile ("outb %al, $0x80");
+}
+
+uint8_t inb(uint16_t port)
+{
+	uint8_t result;
+	asm volatile("inb %1, %0" : "=a"(result) : "Nd"(port));
+	return result;
+}
+
+void outb(uint8_t value, uint16_t port)
+{
+	asm volatile("outb %0, %1" : : "a"(value), "Nd"(port));
+}
+
+void outb_p(uint8_t value, uint16_t port)
+{
+	outb(value, port);
+	_io_delay();
+}
+
 }

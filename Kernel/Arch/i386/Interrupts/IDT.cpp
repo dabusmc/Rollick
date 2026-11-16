@@ -36,6 +36,23 @@ void isr29();
 void isr30();
 void isr31();
 
+void irq0();
+void irq1();
+void irq2();
+void irq3();
+void irq4();
+void irq5();
+void irq6();
+void irq7();
+void irq8();
+void irq9();
+void irq10();
+void irq11();
+void irq12();
+void irq13();
+void irq14();
+void irq15();
+
 }
 
 namespace Kernel
@@ -45,11 +62,10 @@ namespace Kernel
 		static IDTEntry s_IDT[256];
 		static IDTPointer s_IDTPointer;
 
-		static_assert(sizeof(IDTEntry) == 8);
-		static_assert(sizeof(IDTPointer) == 6);
+		static constexpr uint32_t ISR_COUNT = 48;
 
 		using ISR = void (*)();
-		static ISR ISRHandlers[32] =
+		static ISR ISRHandlers[ISR_COUNT] =
 		{
 			isr0, isr1, isr2, isr3,
 			isr4, isr5, isr6, isr7,
@@ -58,12 +74,16 @@ namespace Kernel
 			isr16, isr17, isr18, isr19,
 			isr20, isr21, isr22, isr23,
 			isr24, isr25, isr26, isr27,
-			isr28, isr29, isr30, isr31
+			isr28, isr29, isr30, isr31,
+			irq0, irq1, irq2, irq3,
+			irq4, irq5, irq6, irq7,
+			irq8, irq9, irq10, irq11,
+			irq12, irq13, irq14, irq15
 		};
 
 		void InitializeIDT()
 		{
-			for (uint32_t i = 0; i < 32; i++)
+			for (uint32_t i = 0; i < ISR_COUNT; i++)
 			{
 				uint32_t handlerAddress = reinterpret_cast<uint32_t>(ISRHandlers[i]);
 

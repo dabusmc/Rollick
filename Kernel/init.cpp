@@ -1,24 +1,26 @@
 #include "Library/kStandardLib.h"
 
 #include "Arch/i386/Interrupts/IDT.h"
+#include "Arch/i386/Interrupts/PIC.h"
+#include "Arch/i386/Interrupts/PIT.h"
 
 extern "C" void kernelMain(void)
 {
 	Kernel::Interrupts::InitializeIDT();
+	Kernel::Interrupts::InitializePIC();
 
-	volatile int numerator = 10;
-	volatile int denominator = 0;
+	Kernel::Interrupts::InitializePIT(100);
+	Kernel::Interrupts::SetIRQMask(0, false);
 
-	int result;
+	asm volatile("sti" ::: "memory");
 
-	asm volatile(
-		"movl %1, %%eax\n"
-		"cltd\n"
-		"idivl %2\n"
-		: "=a"(result)
-		: "r"(numerator), "r"(denominator)
-		: "edx"
-	);
+	uint32_t start = Kernel::Interrupts::GetPITTicks();
+	while (Kernel::Interrupts::GetPITTicks() - start < 100)
+	{
+		// Wait for approximately one second.
+	}
+
+	kprintf("PIT ticks: %d\n", Kernel::Interrupts::GetPITTicks());
 
 	kprintf("Hello, Rollick!\n");
 	kprintf("Character: %c\n", 'A');

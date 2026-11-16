@@ -23,18 +23,18 @@ isr_common:
     mov %ax, %gs
 
     # Preserve the address of our saved CPU state
-    mov %esp, %eax
+    mov %esp, %ebx
 
     # Align the stack to 16 bytes for the C++ call
     andl $-16, %esp
     subl $12, %esp
-    pushl %eax
+    pushl %ebx
 
     # Call the C++ interrupt handler
     call interruptHandler
 
     # Restore the original interrupt stack
-    movl (%esp), %esp
+    movl %ebx, %esp
 
     # Restore general-purpose registers
     popa
@@ -107,3 +107,28 @@ ISR_ERR 29
 ISR_ERR 30
 
 ISR_NOERR 31
+
+.macro IRQ n
+.global irq\n
+irq\n:
+    pushl $0          # Dummy error code
+    pushl $(32 + \n)  # Interrupt vector
+    jmp isr_common
+.endm
+
+IRQ 0
+IRQ 1
+IRQ 2
+IRQ 3
+IRQ 4
+IRQ 5
+IRQ 6
+IRQ 7
+IRQ 8
+IRQ 9
+IRQ 10
+IRQ 11
+IRQ 12
+IRQ 13
+IRQ 14
+IRQ 15
