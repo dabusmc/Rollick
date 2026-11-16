@@ -4,27 +4,24 @@
 #include "Arch/i386/Interrupts/PIC.h"
 #include "Arch/i386/Interrupts/PIT.h"
 
-extern "C" void kernelMain(void)
+#define PIT_FREQUENCY 100
+
+void initInterrupts()
 {
 	Kernel::Interrupts::InitializeIDT();
+	kprintf("Initialized IDT\n");
 	Kernel::Interrupts::InitializePIC();
+	kprintf("Initialized PIC\n");
 
-	Kernel::Interrupts::InitializePIT(100);
+	Kernel::Interrupts::InitializePIT(PIT_FREQUENCY);
+	kprintf("Initialized PIT at a frequency of %d\n", PIT_FREQUENCY);
+
 	Kernel::Interrupts::SetIRQMask(0, false);
-
 	asm volatile("sti" ::: "memory");
+	kprintf("Enabled interrupts\n");
+}
 
-	uint32_t start = Kernel::Interrupts::GetPITTicks();
-	while (Kernel::Interrupts::GetPITTicks() - start < 100)
-	{
-		// Wait for approximately one second.
-	}
-
-	kprintf("PIT ticks: %d\n", Kernel::Interrupts::GetPITTicks());
-
-	kprintf("Hello, Rollick!\n");
-	kprintf("Character: %c\n", 'A');
-	kprintf("String: %s\n", "Hello World");
-	kprintf("Mixed: %s %s%c\n", "Rollick", "OS", '!');
-	kprintf("Progress: %i%%\n", 100);
+extern "C" void kernelMain(void)
+{
+	initInterrupts();
 }

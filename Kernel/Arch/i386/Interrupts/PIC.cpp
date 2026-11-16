@@ -63,15 +63,21 @@ namespace Kernel
 			uint8_t mask = inb(port);
 
 			if (masked)
+			{
 				mask |= (1 << bit);
+			}
 			else
+			{
 				mask &= ~(1 << bit);
+			}
 
 			outb_p(mask, port);
 
 			// Slave PIC interrupts require the master cascade (IRQ2).
 			if (irq >= 8 && !masked)
+			{
 				SetIRQMask(2, false);
+			}
 		}
 	}
 }
