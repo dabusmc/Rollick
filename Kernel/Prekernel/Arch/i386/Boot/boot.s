@@ -1,110 +1,219 @@
-/* Declare constants for the multiboot header. */
-.set ALIGN,    1<<0             /* align loaded modules on page boundaries */
-.set MEMINFO,  1<<1             /* provide memory map */
-.set FLAGS,    ALIGN | MEMINFO  /* this is the Multiboot 'flag' field */
-.set MAGIC,    0x1BADB002       /* 'magic number' lets bootloader find the header */
-.set CHECKSUM, -(MAGIC + FLAGS) /* checksum of above, to prove we are multiboot */
 
-/* 
-Declare a multiboot header that marks the program as a kernel. These are magic
-values that are documented in the multiboot standard. The bootloader will
-search for this signature in the first 8 KiB of the kernel file, aligned at a
-32-bit boundary. The signature is in its own section so the header can be
-forced to be within the first 8 KiB of the kernel file.
-*/
+/*
+ * Multiboot header constants.
+ *
+ * These values tell a Multiboot-compatible bootloader how to load and start the kernel.
+ */
+.set ALIGN,    1<<0          /* Request that loaded modules are page-aligned. */
+.set MEMINFO,  1<<1          /* Request memory map information from the bootloader. */
+.set FLAGS,    ALIGN | MEMINFO
+.set MAGIC,    0x1BADB002    /* Multiboot 1 magic number. */
+.set CHECKSUM, -(MAGIC + FLAGS) /* Makes MAGIC + FLAGS + CHECKSUM equal zero. */
+
+/*
+ * Our kernel's higher-half virtual address offset.
+ *
+ * Physical address + KERNEL_VMA = higher-half virtual address.
+ * For example: 0x00200000 + 0xC0000000 = 0xC0200000.
+ */
+.set KERNEL_VMA, 0xC0000000
+
+
+/*
+ * Multiboot header.
+ *
+ * The bootloader searches for this header near the beginning of
+ * the kernel file to identify it as a Multiboot kernel.
+ */
 .section .multiboot
 .align 4
 .long MAGIC
 .long FLAGS
 .long CHECKSUM
 
-/*
-The multiboot standard does not define the value of the stack pointer register
-(esp) and it is up to the kernel to provide a stack. This allocates room for a
-small stack by creating a symbol at the bottom of it, then allocating 16384
-bytes for it, and finally creating a symbol at the top. The stack grows
-downwards on x86. The stack is in its own section so it can be marked nobits,
-which means the kernel file is smaller because it does not contain an
-uninitialized stack. The stack on x86 must be 16-byte aligned according to the
-System V ABI standard and de-facto extensions. The compiler will assume the
-stack is properly aligned and failure to align the stack will result in
-undefined behavior.
-*/
-.section .bss.stack,"aw",@nobits
-.align 16
-stack_bottom:
-.skip 16384 # 16 KiB
-stack_top:
 
 /*
-The linker script specifies _start as the entry point to the kernel and the
-bootloader will jump to this position once the kernel has been loaded. It
-doesn't make sense to return from this function as the bootloader is gone.
-*/
-.section .text
+ * Bootstrap memory allocations.
+ *
+ * These are placed in .boot.bss so they reside at low physical
+ * addresses and can be accessed before paging is enabled.
+ */
+.section .boot.bss,"aw",@nobits
+
+/* Reserve a 16 KiB stack. The x86 stack grows downwards. */
+.align 16
+stack_bottom:
+.skip 16384
+stack_top:                  /* Initial ESP points here. */
+
+/*
+ * Page directory: 1024 entries, each 4 bytes (4 KiB total).
+ * Must be aligned to a 4 KiB boundary.
+ */
+.align 4096
+page_directory:
+.skip 4096
+
+/*
+ * First page table: 1024 entries, each 4 bytes (4 KiB total).
+ * Each entry maps one 4 KiB physical page.
+ */
+.align 4096
+first_page_table:
+.skip 4096
+
+
+/*
+ * Bootstrap entry point.
+ *
+ * The linker places this section at a low physical address.
+ * The bootloader jumps here with paging disabled.
+ */
+.section .boot.text,"ax"
 .global _start
 .type _start, @function
 _start:
-	/*
-	The bootloader has loaded us into 32-bit protected mode on a x86
-	machine. Interrupts are disabled. Paging is disabled. The processor
-	state is as defined in the multiboot standard. The kernel has full
-	control of the CPU. The kernel can only make use of hardware features
-	and any code it provides as part of itself. There's no printf
-	function, unless the kernel provides its own <stdio.h> header and a
-	printf implementation. There are no security restrictions, no
-	safeguards, no debugging mechanisms, only what the kernel provides
-	itself. It has absolute and complete power over the
-	machine.
-	*/
 
-	/*
-	To set up a stack, we set the esp register to point to the top of the
-	stack (as it grows downwards on x86 systems). This is necessarily done
-	in assembly as languages such as C cannot function without a stack.
-	*/
+	/* Set ESP to the top of the allocated bootstrap stack. */
 	mov $stack_top, %esp
 
 	/*
-	This is a good place to initialize crucial processor state before the
-	high-level kernel is entered. It's best to minimize the early
-	environment where crucial features are offline. Note that the
-	processor is not fully initialized yet: Features such as floating
-	point instructions and instruction set extensions are not initialized
-	yet. The GDT should be loaded here. Paging should be enabled here.
-	C++ features such as global constructors and exceptions will require
-	runtime support to work as well.
-	*/
+	 * Clear the page directory and page table.
+	 *
+	 * EDI = destination address.
+	 * ECX = number of 32-bit values to write.
+	 * EAX = value to write (zero).
+	 *
+	 * 2048 values * 4 bytes = 8192 bytes (8 KiB).
+	 */
+	mov $page_directory, %edi
+	mov $2048, %ecx
+	xor %eax, %eax
+
+	/* Ensure string instructions increment their destination pointers. */
+	cld
+
+	/* Repeat STOSL ECX times, writing EAX to [EDI]. */
+	rep stosl
 
 	/*
-	Enter the high-level kernel. The ABI requires the stack is 16-byte
-	aligned at the time of the call instruction (which afterwards pushes
-	the return pointer of size 4 bytes). The stack was originally 16-byte
-	aligned above and we've pushed a multiple of 16 bytes to the
-	stack since (pushed 0 bytes so far), so the alignment has thus been
-	preserved and the call is well defined.
-	*/
-	call prekernelInit
-    call kernelMain
+	 * Identity-map the first 4 MiB using 4 KiB pages.
+	 *
+	 * EDI = current page-table entry.
+	 * EAX = physical address plus page flags.
+	 * ECX = number of page-table entries to create.
+	 */
+	mov $first_page_table, %edi
+	mov $0x00000003, %eax  /* Bit 0: Present, Bit 1: Writable. */
+	mov $1024, %ecx
+
+1:
+	/* Store the current page-table entry and advance EDI by 4 bytes. */
+	stosl
+
+	/* Advance the physical address by one 4 KiB page. */
+	add $0x1000, %eax
+
+	/* Decrement ECX and repeat until all 1024 entries are created. */
+	loop 1b
 
 	/*
-	If the system has nothing more to do, put the computer into an
-	infinite loop. To do that:
-	1) Disable interrupts with cli (clear interrupt enable in eflags).
-	   They are already disabled by the bootloader, so this is not needed.
-	   Mind that you might later enable interrupts and return from
-	   kernel_main (which is sort of nonsensical to do).
-	2) Wait for the next interrupt to arrive with hlt (halt instruction).
-	   Since they are disabled, this will lock up the computer.
-	3) Jump to the hlt instruction if it ever wakes up due to a
-	   non-maskable interrupt occurring or due to system management mode.
-	*/
-	cli
-1:	hlt
-	jmp 1b
+	 * Connect the page table to the page directory.
+	 *
+	 * PDE 0 maps virtual addresses 0x00000000–0x003FFFFF.
+	 * PDE 768 maps virtual addresses 0xC0000000–0xC03FFFFF.
+	 *
+	 * Both entries point to the same page table, giving us
+	 * an identity mapping and a higher-half mapping.
+	 */
+	mov $first_page_table, %eax
+
+	/* Mark the page-table pointer as Present and Writable. */
+	or $0x3, %eax
+
+	/* Set page-directory entry 0. */
+	mov %eax, page_directory
+
+	/* Set page-directory entry 768 (768 * 4 bytes per entry). */
+	mov %eax, page_directory + (768 * 4)
+
+	/*
+	 * Load CR3 with the physical address of the page directory.
+	 *
+	 * CR3 tells the processor where to find the current page directory.
+	 * This must be a physical address, not a higher-half virtual address.
+	 */
+	mov $page_directory, %eax
+	mov %eax, %cr3
+
+	/*
+	 * Enable paging by setting bit 31 (PG) in CR0.
+	 *
+	 * From this point onwards, memory accesses are translated
+	 * through the page directory and page tables.
+	 */
+	mov %cr0, %eax
+	or $0x80000000, %eax
+	mov %eax, %cr0
+
+	/*
+	 * Jump to the higher-half entry point.
+	 *
+	 * We use an indirect jump because higher_half_entry has a
+	 * higher-half virtual address, whereas this bootstrap code
+	 * is executing at a low address.
+	 *
+	 * The identity mapping keeps the current instruction address
+	 * valid until this jump takes us into the higher half.
+	 */
+	mov $higher_half_entry, %eax
+	jmp *%eax
+
+.size _start, . - _start
+
 
 /*
-Set the size of the _start symbol to the current location '.' minus its start.
-This is useful when debugging or when you implement call tracing.
-*/
-.size _start, . - _start
+ * Higher-half kernel entry point.
+ *
+ * Unlike _start, this function is linked at a higher-half virtual
+ * address. It can now safely call the normal C++ kernel functions.
+ */
+.section .text
+.global higher_half_entry
+.type higher_half_entry, @function
+
+higher_half_entry:
+
+    /*
+     * Switch to the higher-half alias of the existing stack.
+     *
+     * The physical stack hasn't moved. We're just accessing it
+     * through its higher-half virtual address instead.
+     */
+    mov $(stack_top + KERNEL_VMA), %esp
+
+    /*
+     * Run the early kernel initialisation.
+     *
+     * prekernelInit() initialises the stack-smashing protector
+     * and executes global C++ constructors.
+     */
+    call prekernelInit
+
+    /* Enter the main kernel function. */
+    call kernelMain
+
+    /*
+     * kernelMain should never return.
+     * If it does, disable interrupts and halt the processor.
+     */
+    cli
+
+1:
+    /* Halt the CPU until an interrupt or other wake-up event occurs. */
+    hlt
+
+    /* Return to the halt instruction if execution resumes. */
+    jmp 1b
+
+.size higher_half_entry, . - higher_half_entry

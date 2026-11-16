@@ -1,9 +1,13 @@
 set(KERNEL_SOURCES
         Arch/i386/Terminal.cpp
+
         Library/kStandardLib.cpp
+
         Prekernel/Arch/i386/Boot/boot.s
         Prekernel/init.cpp
+
         Security/StackSmashingProtector.cpp
+
         Panic.cpp
         init.cpp)
 
