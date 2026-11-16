@@ -1,4 +1,6 @@
 set(KERNEL_SOURCES
+        Arch/i386/Interrupts/IDT.cpp
+        Arch/i386/Interrupts/ISR.s
         Arch/i386/Terminal.cpp
 
         Library/kStandardLib.cpp
