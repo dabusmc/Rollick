@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Input/KeyCode.h"
+
 #include <stdint.h>
 
 namespace Kernel
@@ -11,6 +13,7 @@ namespace Kernel
 		virtual void Initialize() = 0;
 
 		[[nodiscard]] bool Ready() const { return m_IsReady; }
+		[[nodiscard]] char TranslateKey(KeyCode keycode) const;
 
 		void InterpretScancode(uint16_t scancode);
 

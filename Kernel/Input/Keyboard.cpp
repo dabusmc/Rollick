@@ -4,44 +4,71 @@
 
 namespace Kernel
 {
-	static const char s_ScancodeTable[] =
+
+	static constexpr char s_ScancodeTable[0x59] =
 	{
-		'\0', // 0x00
-		'\0', // 0x01 (escape)
-		'1',  // 0x02 (1)
-		'2',  // 0x03 (2)
-		'3',  // 0x04 (3)
-		'4',  // 0x05 (4)
-		'5',  // 0x06 (5)
-		'6',  // 0x07 (6)
-		'7',  // 0x08 (7)
-		'8',  // 0x09 (8)
-		'9',  // 0x0A (9)
-		'0',  // 0x0B (0)
-		'-',  // 0x0C (-)
-		'=',  // 0x0D (=)
-		'\0', // 0x0E (backspace)
-		'\t', // 0x0F (tab)
-		'q',  // 0x10 (Q)
+		// 0x00 - 0x0F
+		'\0', '\x1B', '1', '2',
+		'3', '4', '5', '6',
+		'7', '8', '9', '0',
+		'-', '=', '\b', '\t',
+
+		// 0x10 - 0x1F
+		'q', 'w', 'e', 'r',
+		't', 'y', 'u', 'i',
+		'o', 'p', '[', ']',
+		'\n', '\0', 'a', 's',
+
+		// 0x20 - 0x2F
+		'd', 'f', 'g', 'h',
+		'j', 'k', 'l', ';',
+		'\'', '`', '\0', '\\',
+		'z', 'x', 'c', 'v',
+
+		// 0x30 - 0x3F
+		'b', 'n', 'm', ',',
+		'.', '/', '\0', '*',
+		'\0', ' ', '\0', '\0',
+		'\0', '\0', '\0', '\0',
+
+		// 0x40 - 0x4F
+		'\0', '\0', '\0', '\0',
+		'\0', '\0', '\0', '7',
+		'8', '9', '-', '4',
+		'5', '6', '+', '1',
+
+		// 0x50 - 0x58
+		'2', '3', '0', '.',
+		'\0', '\0', '\\', '\0',
+		'\0'
 	};
+
+
+	char Keyboard::TranslateKey(KeyCode keycode) const
+	{
+		uint16_t sc = static_cast<uint16_t>(keycode);
+		if (sc >= sizeof(s_ScancodeTable))
+		{
+			return '\0';
+		}
+
+		return s_ScancodeTable[sc];
+	}
 
 	void Keyboard::InterpretScancode(uint16_t scancode)
 	{
 		bool released = scancode & 0x80;
 		if (released)
+		{
 			return;
+		}
 
-		bool extended = scancode & 0xFF00;
-
-		uint8_t sc = scancode & 0xFF;
-
-		if (sc >= sizeof(s_ScancodeTable))
+		char key = TranslateKey(static_cast<KeyCode>(scancode));
+		if (key == '\0')
+		{
 			return;
+		}
 
-		char character = s_ScancodeTable[sc];
-		if (character == '\0')
-			return;
-
-		kprintf("%c", character);
+		kprintf("%c", key);
 	}
 }
