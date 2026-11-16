@@ -192,6 +192,9 @@ higher_half_entry:
      */
     mov $(stack_top + KERNEL_VMA), %esp
 
+	/* Load the Global Descriptor Table. */
+    call load_gdt
+
     /*
      * Run the early kernel initialisation.
      *
@@ -217,3 +220,64 @@ higher_half_entry:
     jmp 1b
 
 .size higher_half_entry, . - higher_half_entry
+
+.global load_gdt
+.type load_gdt, @function
+
+load_gdt:
+    /* Tell the CPU where the GDT is. */
+    lgdt gdt_descriptor
+
+    /* Load the kernel data segment selector into AX. */
+    mov $0x10, %ax
+
+    /* Update the data segment registers. */
+    mov %ax, %ds
+    mov %ax, %es
+    mov %ax, %fs
+    mov %ax, %gs
+    mov %ax, %ss
+
+    /*
+     * Reload CS using a far jump.
+     *
+     * Loading CS requires a far jump or equivalent control transfer.
+     * This ensures the CPU uses the new code segment descriptor.
+     */
+    ljmp $0x08, $1f
+
+1:
+    ret
+
+.size load_gdt, . - load_gdt
+
+/*
+ * Global Descriptor Table.
+ *
+ * Each descriptor is 8 bytes.
+ */
+.section .rodata
+.align 8
+
+gdt_start:
+    /* Entry 0: Null descriptor. */
+    .quad 0x0000000000000000
+
+    /* Entry 1: Kernel code segment. */
+    .quad 0x00CF9A000000FFFF
+
+    /* Entry 2: Kernel data segment. */
+    .quad 0x00CF92000000FFFF
+
+gdt_end:
+
+/*
+ * GDT Descriptor (GDTR).
+ *
+ * The CPU expects:
+ * - A 16-bit size (table size minus one).
+ * - A 32-bit address pointing to the GDT.
+ */
+gdt_descriptor:
+    .word gdt_end - gdt_start - 1
+    .long gdt_start
