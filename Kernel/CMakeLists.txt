@@ -1,12 +1,4 @@
 set(KERNEL_SOURCES
-        Arch/i386/Interrupts/IDT.cpp
-        Arch/i386/Interrupts/Interrupts.cpp
-        Arch/i386/Interrupts/ISR.s
-        Arch/i386/Interrupts/PIC.cpp
-        Arch/i386/Interrupts/PIT.cpp
-        Arch/i386/Serial/Serial.cpp
-        Arch/i386/Terminal.cpp
-
         Library/kStandardLib.cpp
 
         Prekernel/Arch/i386/Boot/boot.s
@@ -17,7 +9,20 @@ set(KERNEL_SOURCES
         Panic.cpp
         init.cpp)
 
-add_executable(rollick_kernel ${KERNEL_SOURCES})
+set(i386_SOURCES
+    Arch/i386/Interrupts/IDT.cpp
+    Arch/i386/Interrupts/Interrupts.cpp
+    Arch/i386/Interrupts/ISR.s
+    Arch/i386/Interrupts/PIC.cpp
+    Arch/i386/Interrupts/PIT.cpp
+
+    Arch/i386/Keyboard/Keyboard.cpp
+
+    Arch/i386/Serial/Serial.cpp
+
+    Arch/i386/Terminal.cpp)
+
+add_executable(rollick_kernel ${i386_SOURCES} ${KERNEL_SOURCES})
 
 target_include_directories(rollick_kernel PRIVATE .)
 

@@ -7,6 +7,9 @@
 
 #include <stdint.h>
 
+#include "Arch/i386/Keyboard/Keyboard.h"
+#include "Library/kStandardLib.h"
+
 extern "C" void interruptHandler(Kernel::Interrupts::InterruptFrame* frame)
 {
 	// Hardware IRQs occupy vectors 32–47.
@@ -16,6 +19,9 @@ extern "C" void interruptHandler(Kernel::Interrupts::InterruptFrame* frame)
 		{
 		case 32:
 			Kernel::Interrupts::HandlePITInterrupt();
+			break;
+		case 33:
+			Kernel::HandleKeyboardInterrupt();
 			break;
 		default:
 			break;
