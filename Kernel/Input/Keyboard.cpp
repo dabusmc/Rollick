@@ -6,7 +6,6 @@
 
 namespace Kernel
 {
-
 	static constexpr char s_ScancodeTable[0x59] =
 	{
 		// 0x00 - 0x0F
@@ -83,6 +82,14 @@ namespace Kernel
 		'\0'
 	};
 
+	static bool IsLetter(KeyCode key)
+	{
+		uint16_t code = static_cast<uint16_t>(key);
+
+		return (code >= 0x10 && code <= 0x19) ||
+			   (code >= 0x1E && code <= 0x26) ||
+			   (code >= 0x2C && code <= 0x32);
+	}
 
 	char Keyboard::TranslateKey(KeyCode keycode) const
 	{
@@ -92,50 +99,45 @@ namespace Kernel
 			return '\0';
 		}
 
-		if (m_IsShifted)
-		{
-			return s_ScancodeTableShifted[sc];
-		}
+		bool shifted = m_LeftShiftPressed || m_RightShiftPressed;
 
-		return s_ScancodeTable[sc];
-	}
+		if (m_CapsLockEnabled && IsLetter(keycode))
+			shifted = !shifted;
 
-	void Keyboard::InterpretScancode(uint16_t scancode)
-	{
-		// Extended scancodes aren't handled yet.
-		if (scancode > 0xFF)
-			return;
-
-		bool released = (scancode & 0x80) != 0;
-		scancode &= 0x7F;
-
-		KeyEvent event =
-		{
-			static_cast<KeyCode>(scancode),
-			released ? KeyState::Released : KeyState::Pressed
-		};
-
-		g_GlobalObjects.Input_KeyboardEvents.Push(event);
+		return shifted
+			? s_ScancodeTableShifted[sc]
+			: s_ScancodeTable[sc];
 	}
 
 	void Keyboard::ProcessKeyEvent(const KeyEvent& event)
 	{
-		if (event.Key == KeyCode::LeftShift)
+		bool pressed = event.State == KeyState::Pressed;
+
+		switch (event.Key)
 		{
-			m_IsShifted = event.State == KeyState::Pressed;
+		case KeyCode::LeftShift:
+			m_LeftShiftPressed = pressed;
 			return;
+
+		case KeyCode::RightShift:
+			m_RightShiftPressed = pressed;
+			return;
+		case KeyCode::CapsLock:
+			if (pressed && !m_CapsLockPressed)
+				m_CapsLockEnabled = !m_CapsLockEnabled;
+
+			m_CapsLockPressed = pressed;
+			return;
+		default:
+			break;
 		}
 
-		if (event.State == KeyState::Released)
-		{
+		if (!pressed)
 			return;
-		}
 
 		char key = TranslateKey(event.Key);
 
 		if (key != '\0')
-		{
 			kprintf("%c", key);
-		}
 	}
 }
