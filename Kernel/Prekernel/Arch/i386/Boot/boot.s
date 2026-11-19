@@ -1,4 +1,3 @@
-
 /*
  * Multiboot header constants.
  *
@@ -46,12 +45,19 @@ stack_bottom:
 .skip 16384
 stack_top:                  /* Initial ESP points here. */
 
+multiboot_magic:
+.skip 4
+
+multiboot_info:
+.skip 4
+
 /*
  * Page directory: 1024 entries, each 4 bytes (4 KiB total).
  * Must be aligned to a 4 KiB boundary.
  */
 .align 4096
-page_directory:
+.global PageDirectory
+PageDirectory:
 .skip 4096
 
 /*
@@ -74,6 +80,13 @@ first_page_table:
 .type _start, @function
 _start:
 
+    /* Preserve the Multiboot information provided by GRUB. */
+    mov %eax, multiboot_magic
+    mov %ebx, multiboot_info
+
+    /* Set ESP to the top of the allocated bootstrap stack. */
+    mov $stack_top, %esp
+
 	/* Set ESP to the top of the allocated bootstrap stack. */
 	mov $stack_top, %esp
 
@@ -86,7 +99,7 @@ _start:
 	 *
 	 * 2048 values * 4 bytes = 8192 bytes (8 KiB).
 	 */
-	mov $page_directory, %edi
+	mov $PageDirectory, %edi
 	mov $2048, %ecx
 	xor %eax, %eax
 
@@ -132,10 +145,21 @@ _start:
 	or $0x3, %eax
 
 	/* Set page-directory entry 0. */
-	mov %eax, page_directory
+	mov %eax, PageDirectory
 
 	/* Set page-directory entry 768 (768 * 4 bytes per entry). */
-	mov %eax, page_directory + (768 * 4)
+	mov %eax, PageDirectory + (768 * 4)
+
+	/*
+     * Recursive page-directory mapping.
+     *
+     * PDE 1023 points back to the page directory itself.
+     * This allows us to access the page directory and all page
+     * tables through a reserved region of virtual memory.
+     */
+    mov $PageDirectory, %eax
+    or $0x3, %eax
+    mov %eax, PageDirectory + (1023 * 4)
 
 	/*
 	 * Load CR3 with the physical address of the page directory.
@@ -143,7 +167,7 @@ _start:
 	 * CR3 tells the processor where to find the current page directory.
 	 * This must be a physical address, not a higher-half virtual address.
 	 */
-	mov $page_directory, %eax
+	mov $PageDirectory, %eax
 	mov %eax, %cr3
 
 	/*
@@ -203,8 +227,13 @@ higher_half_entry:
      */
     call prekernelInit
 
-    /* Enter the main kernel function. */
+    /* Pass the Multiboot information to kernelMain(). */
+    pushl multiboot_info
+    pushl multiboot_magic
     call kernelMain
+
+    /* Clean up the two arguments from the stack. */
+    addl $8, %esp
 
     /*
      * kernelMain should never return.

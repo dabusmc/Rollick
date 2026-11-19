@@ -4,6 +4,9 @@ set(KERNEL_SOURCES
 
             Library/kStandardLib.cpp
 
+            Memory/Heap.cpp
+            Memory/PhysicalMemoryManager.cpp
+
             Prekernel/init.cpp
 
             Security/StackSmashingProtector.cpp
@@ -13,19 +16,21 @@ set(KERNEL_SOURCES
             init.cpp)
 
 set(i386_SOURCES
+        Arch/i386/Input/PS2Keyboard.cpp
+        Arch/i386/Input/PS2Scancode.cpp
+        Arch/i386/Input/Input.cpp
+
         Arch/i386/Interrupts/IDT.cpp
         Arch/i386/Interrupts/Interrupts.cpp
         Arch/i386/Interrupts/ISR.s
         Arch/i386/Interrupts/PIC.cpp
         Arch/i386/Interrupts/PIT.cpp
 
-        Arch/i386/Input/PS2Keyboard.cpp
-        Arch/i386/Input/PS2Scancode.cpp
-        Arch/i386/Input/Input.cpp
+        Arch/i386/Memory/Paging.cpp
 
-        Arch/i386/Serial/Serial.cpp
-
+        Arch/i386/Serial.cpp
         Arch/i386/Terminal.cpp
+        Arch/i386/VirtualMemoryMapper.cpp
 
         Prekernel/Arch/i386/Boot/boot.s)
 

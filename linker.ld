@@ -77,4 +77,7 @@ SECTIONS
 
     __kernel_virtual_start = ADDR(.text);
     __kernel_virtual_end = .;
+
+    __kernel_physical_start = KERNEL_LMA;
+    __kernel_physical_end = __kernel_virtual_end - KERNEL_VMA;
 }

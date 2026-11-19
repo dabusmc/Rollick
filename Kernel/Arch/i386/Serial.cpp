@@ -1,4 +1,4 @@
-#include "Arch/i386/Serial/Serial.h"
+#include "Arch/i386/Serial.h"
 
 #include "Library/kStandardLib.h"
 

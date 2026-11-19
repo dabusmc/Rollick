@@ -11,8 +11,13 @@ void clrscr();
 size_t strlen(const char* str);
 
 size_t itoa(int32_t value, char* buffer);
+size_t utoa(uint32_t value, char* buffer);
+
 int32_t putchar(int ic);
 int32_t kprintf(const char* format, ...);
+
+void* kmalloc(size_t size);
+void kfree(void* p);
 
 void io_wait();
 
